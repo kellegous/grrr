@@ -28,13 +28,13 @@ Status FileUrlFromString(CFURLRef* url, std::string& filename) {
   return NoErr();
 }
 
-Status LoadFromCfUrl(CGImageRef* img, CFURLRef url) {
+Status LoadFromCfUrl(CGImageRef* img, CFURLRef url, gr::CreateFromDataProviderFn fn) {
   AutoRef<CGDataProviderRef> cfIp = CGDataProviderCreateWithURL(url);
   if (!cfIp) {
     return ERR("cannot create data provider");
   }
 
-  CGImageRef cgImg = CGImageCreateWithPNGDataProvider(
+  CGImageRef cgImg = fn(
       cfIp,
       NULL,
       false,
@@ -75,6 +75,14 @@ Status Export(CGImageRef img,
 } // anonymous
 
 namespace gr {
+
+CreateFromDataProviderFn FromPng() {
+  return CGImageCreateWithPNGDataProvider;
+}
+
+CreateFromDataProviderFn FromJpg() {
+  return CGImageCreateWithJPEGDataProvider;
+}
 
 //
 CGContextRef NewContext(int w, int h) {
@@ -141,7 +149,7 @@ Status ExportAsPng(CGContextRef ctx, std::string& filename) {
 }
 
 //
-Status LoadFromUrl(CGImageRef* img, std::string& url) {
+Status LoadFromUrl(CGImageRef* img, std::string& url, CreateFromDataProviderFn fn) {
   *img = NULL;
 
   AutoRef<CFStringRef> cfUrlStr = CFStringCreateWithCStringNoCopy(
@@ -161,10 +169,10 @@ Status LoadFromUrl(CGImageRef* img, std::string& url) {
     return ERR("cannot create url");
   }
 
-  return LoadFromCfUrl(img, cfUrl);
+  return LoadFromCfUrl(img, cfUrl, fn);
 }
 
-Status LoadFromFile(CGImageRef* img, std::string& filename) {
+Status LoadFromFile(CGImageRef* img, std::string& filename, CreateFromDataProviderFn fn) {
   *img = NULL;
 
   AutoRef<CFURLRef> url;
@@ -173,7 +181,7 @@ Status LoadFromFile(CGImageRef* img, std::string& filename) {
     return did;
   }
 
-  return LoadFromCfUrl(img, url);
+  return LoadFromCfUrl(img, url, fn);
 }
 
 //

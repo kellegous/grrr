@@ -7,6 +7,15 @@
 
 namespace gr {
 
+typedef CGImageRef (*CreateFromDataProviderFn)(
+	CGDataProviderRef,
+	const CGFloat*,
+	bool,
+	CGColorRenderingIntent);
+
+CreateFromDataProviderFn FromPng();
+CreateFromDataProviderFn FromJpg();
+
 CGContextRef NewContext(int w, int h);
 
 CGContextRef NewContext(uint8_t* data, int w, int h);
@@ -21,9 +30,9 @@ Status ExportAsJpg(CGContextRef ctx, std::string& filename, float qual);
 
 Status ExportAsJpg(CGContextRef ctx, std::string& filename, float qual);
 
-Status LoadFromUrl(CGImageRef* img, std::string& url);
+Status LoadFromUrl(CGImageRef* img, std::string& url, CreateFromDataProviderFn fn);
 
-Status LoadFromFile(CGImageRef* img, std::string& filename);
+Status LoadFromFile(CGImageRef* img, std::string& filename, CreateFromDataProviderFn fn);
 
 void DrawCoveringImage(CGContextRef ctx, CGImageRef img);
 
